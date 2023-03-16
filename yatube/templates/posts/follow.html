@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}Подписки{% endblock %}
+{% block header %}Подписки{% endblock %}
+{% block content %}
+  {% include 'includes/posts/switcher.html' %}
+  {% include "includes/posts/post_list.html" %}
+  {% include "includes/posts/paginator.html" %}
+{% endblock %} 

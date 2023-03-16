@@ -1,0 +1,9 @@
+<!-- templates/posts/group_list.html --> 
+{% extends 'base.html' %}
+{% block title%}Записи сообщества {{ group.title }}{% endblock %}
+{% block header %}{{ group.title }}{% endblock %}
+{% block content %}
+  <p>{{ group.description }}</p>
+  {% include "includes/posts/post_list.html" with group_html=True%}
+  {% include 'includes/posts/paginator.html' %}
+{% endblock %} 

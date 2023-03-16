@@ -1,0 +1,7 @@
+{# templates/includes/posts/if_full_name.html #}
+
+{% if smth.get_full_name %}
+  {{ smth.get_full_name }}
+{% else %}
+  {{ smth.username }} 
+{% endif%}
