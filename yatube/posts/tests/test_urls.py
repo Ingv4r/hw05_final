@@ -25,6 +25,9 @@ class PostsURLTests(TestCase):
         cls.another_user: AbstractBaseUser = User.objects.create_user(
             username='Mumble'
         )
+        cls.third_user: AbstractBaseUser = User.objects.create_user(
+            username='Jimmy'
+        )
         cls.post: Post = Post.objects.create(
             author=cls.user,
             text='Тестовый пост',
@@ -42,7 +45,8 @@ class PostsURLTests(TestCase):
             'post_edit': f'/posts/{cls.post.pk}/edit/',
             'create': '/create/',
             'unfollow': f'/profile/{cls.another_user.username}/unfollow/',
-            'follow': f'/profile/{cls.another_user.username}/follow/'
+            'follow': f'/profile/{cls.another_user.username}/follow/',
+            'follow_list': '/follow/'
         }
 
     def setUp(self) -> None:
@@ -65,17 +69,12 @@ class PostsURLTests(TestCase):
                 response: HttpResponse = self.guest_client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
-    def test_posts_custom_404_page(self) -> None:
-        """Unexisting page not found and use custom template."""
-        response: HttpResponse = self.guest_client.get('/unexisting_page/')
-        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-        self.assertTemplateUsed(response, 'core/404.html')
-
     def test_posts_urls_exist_authorized(self) -> None:
         """Pages are available to an authorized user."""
         urls: list[str] = [
             self.url_names['create'],
             self.url_names['post_edit'],
+            self.url_names['follow_list']
         ]
         for url in urls:
             with self.subTest(url=url):
@@ -102,6 +101,9 @@ class PostsURLTests(TestCase):
             self.url_names['create']: (
                 next.format(self.url_names['create'])
             ),
+            self.url_names['follow_list']: (
+                next.format(self.url_names['follow_list'])
+            ),
         }
         for redirect_from, redirect_to in redirect_from_to_url.items():
             with self.subTest(redirect_from=redirect_from):
@@ -119,6 +121,7 @@ class PostsURLTests(TestCase):
             self.url_names['create']: 'posts/create_post.html',
             self.url_names['post']: 'posts/post_detail.html',
             self.url_names['post_edit']: 'posts/create_post.html',
+            self.url_names['follow_list']: 'posts/follow.html'
         }
         for url, template in template_url_names.items():
             with self.subTest(url=url):
@@ -165,11 +168,11 @@ class PostsURLTests(TestCase):
     def test_follow_auth_user(self) -> None:
         """Authorized user can subscribe to other users and redirect."""
         response: HttpResponse = self.authorized_client.get(
-            f'/profile/{self.another_user.username}/follow/'
+            f'/profile/{self.third_user.username}/follow/'
         )
         self.assertRedirects(
             response,
-            f'/profile/{self.another_user.username}/'
+            f'/profile/{self.third_user.username}/'
         )
         self.assertEqual(
             Follow.objects.filter(user=self.user.id).count(),

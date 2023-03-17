@@ -9,7 +9,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponse
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-
 from posts.forms import CommentForm, PostForm
 from posts.models import Comment, Group, Post
 

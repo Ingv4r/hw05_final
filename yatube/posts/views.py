@@ -10,7 +10,7 @@ from .utils import get_paginator
 TITLE_FIRST_CHARS = 30
 
 
-@cache_page(0, key_prefix='index_page')
+@cache_page(20, key_prefix='index_page')
 def index(request):
     posts = Post.objects.all()
     context = {
@@ -55,7 +55,6 @@ def add_comment(request, post_id):
         comment.post = post
         comment.save()
         return redirect('posts:post_detail', post_id)
-    return form
 
 
 def post_detail(request, post_id):
@@ -69,7 +68,7 @@ def post_detail(request, post_id):
         'title': title,
         'posts_number': posts_number,
         'image': post.image or None,
-        'form': add_comment(request, post_id),
+        'form': CommentForm(request.POST or None),
         'comments': post.comments.all(),
     }
     return render(request, 'posts/post_detail.html', context)
@@ -111,18 +110,21 @@ def post_edit(request, post_id):
 
 @login_required
 def follow_index(request):
-    authors = request.user.follower.values_list('author', flat=True)
-    posts = Post.objects.filter(author_id__in=authors)
-    context = {'page_obj': get_paginator(request, posts)}
+    authors_posts = Post.objects.filter(author__following__user=request.user)
+    context = {'page_obj': get_paginator(request, authors_posts)}
     return render(request, 'posts/follow.html', context)
 
 
 @login_required
 def profile_follow(request, username):
-    Follow.objects.create(
-        user=User.objects.get(username=request.user.username),
-        author=User.objects.get(username=username)
-    )
+    if request.user.username != username and not Follow.objects.filter(
+        author__username=username,
+        user=request.user.id
+    ).exists():
+        Follow.objects.create(
+            user=User.objects.get(username=request.user.username),
+            author=User.objects.get(username=username)
+        )
     return redirect('posts:profile', username)
 
 
