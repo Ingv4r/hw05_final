@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import cache_page
 
@@ -8,9 +9,10 @@ from .models import Follow, Group, Post
 from .utils import get_paginator
 
 TITLE_FIRST_CHARS = 30
+CACHE_TIME_IN_SEC = 20
 
 
-@cache_page(20, key_prefix='index_page')
+@cache_page(CACHE_TIME_IN_SEC, key_prefix='index_page')
 def index(request):
     posts = Post.objects.all()
     context = {
@@ -30,17 +32,22 @@ def group_posts(request, slug):
 
 
 def profile(request, username):
-    posts = Post.objects.select_related('author').filter(
-        author__username=username
-    ).all()
-    all_posts = posts.count()
     author = get_object_or_404(User, username=username)
-    following = Follow.objects.filter(author__username=username).exists()
+    posts = Post.objects.filter(
+        author=author
+    ).all()
+    following = Follow.objects.filter(
+        user=request.user.id,
+        author=author
+    ).exists()
     context = {
         'author': author,
         'page_obj': get_paginator(request, posts),
-        'all_posts': all_posts,
+        'all_posts': posts.count(),
         'following': following,
+        'button': request.user.is_authenticated,
+        # Сделал отдельно, чтобы в шаблон switcher
+        # не нужно было сильно менять
     }
     return render(request, 'posts/profile.html', context)
 
@@ -110,28 +117,29 @@ def post_edit(request, post_id):
 
 @login_required
 def follow_index(request):
-    authors_posts = Post.objects.filter(author__following__user=request.user)
+    authors_posts = Post.objects.select_related(
+        'author',
+    ).filter(author__following__user=request.user)
     context = {'page_obj': get_paginator(request, authors_posts)}
     return render(request, 'posts/follow.html', context)
 
 
 @login_required
 def profile_follow(request, username):
-    if request.user.username != username and not Follow.objects.filter(
-        author__username=username,
-        user=request.user.id
-    ).exists():
+    try:
         Follow.objects.create(
-            user=User.objects.get(username=request.user.username),
-            author=User.objects.get(username=username)
+            user=request.user,
+            author=get_object_or_404(User, username=username)
         )
+    except IntegrityError:
+        pass
     return redirect('posts:profile', username)
 
 
 @login_required
 def profile_unfollow(request, username):
     Follow.objects.filter(
-        user=request.user.id,
-        author=User.objects.get(username=username)
+        user=request.user,
+        author=get_object_or_404(User, username=username)
     ).delete()
     return redirect('posts:profile', username)

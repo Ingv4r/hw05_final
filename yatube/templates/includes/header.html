@@ -1,6 +1,7 @@
 <!-- templates\includes\header.html -->
 {% load static %}
-
+{% load cache %}
+{% cache 0 header %}
 <header>
   <nav class="navbar navbar-light" style="background-color: lightskyblue">
     <div class="container">
@@ -49,4 +50,4 @@
     </div>
   </nav>
 </header>
-
+{% endcache %}
