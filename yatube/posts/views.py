@@ -1,6 +1,5 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import cache_page
 
@@ -36,7 +35,7 @@ def profile(request, username):
     posts = Post.objects.filter(
         author=author
     ).all()
-    following = Follow.objects.filter(
+    following = request.user.is_authenticated and Follow.objects.filter(
         user=request.user.id,
         author=author
     ).exists()
@@ -45,9 +44,6 @@ def profile(request, username):
         'page_obj': get_paginator(request, posts),
         'all_posts': posts.count(),
         'following': following,
-        'button': request.user.is_authenticated,
-        # Сделал отдельно, чтобы в шаблон switcher
-        # не нужно было сильно менять
     }
     return render(request, 'posts/profile.html', context)
 
@@ -126,13 +122,11 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
-    try:
-        Follow.objects.create(
+    if request.user.username != username:
+        Follow.objects.get_or_create(
             user=request.user,
             author=get_object_or_404(User, username=username)
         )
-    except IntegrityError:
-        pass
     return redirect('posts:profile', username)
 
 
