@@ -40,7 +40,10 @@
       </p>
       {% if user == post.author %}
         <a class="btn btn-primary" href="{% url 'posts:update_post' post.id %}">
-          редактировать запись
+          Редактировать пост
+        </a> 
+        <a class="btn btn-primary" href="{% url 'posts:post_delete' post.id %}">
+          Удалить пост
         </a> 
       {% endif %}
       {% include "includes/posts/comment_form.html" %}

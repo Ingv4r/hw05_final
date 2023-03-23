@@ -5,6 +5,14 @@
         <a href="{% url 'posts:profile' comment.author.username %}">
           {{ comment.author.username }}
         </a>
+        <span style="font-size:14px;">
+          {{ comment.created|date:"d E Y" }}:
+        </span>
+        {% if user == comment.author %}
+          <a href="{% url 'posts:delete_comment' post.id comment.id %}">
+            удалить комментарий
+          </a>
+        {% endif %}
       </h5>
       <p>
         {{ comment.text }}

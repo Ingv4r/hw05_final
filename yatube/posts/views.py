@@ -1,17 +1,14 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.cache import cache_page
 
 from .forms import CommentForm, PostForm
-from .models import Follow, Group, Post
+from .models import Follow, Group, Post, Comment
 from .utils import get_paginator
 
 TITLE_FIRST_CHARS = 30
-CACHE_TIME_IN_SEC = 20
 
 
-@cache_page(CACHE_TIME_IN_SEC, key_prefix='index_page')
 def index(request):
     posts = Post.objects.all()
     context = {
@@ -60,6 +57,14 @@ def add_comment(request, post_id):
         return redirect('posts:post_detail', post_id)
 
 
+@login_required
+def delete_comment(requset, post_id, comment_id):
+    comment = Comment.objects.get(id=comment_id)
+    if requset.user == comment.author:
+        comment.delete()
+    return redirect('posts:post_detail', post_id)
+
+
 def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     posts_number = Post.objects.select_related(
@@ -89,6 +94,14 @@ def post_create(request):
         temp_form.save()
         return redirect('posts:profile', temp_form.author)
     return render(request, 'posts/create_post.html', {'form': form})
+
+
+@login_required
+def post_detele(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if request.user == post.author:
+        post.delete()
+    return render(request, 'posts/delete_post.html')
 
 
 @login_required

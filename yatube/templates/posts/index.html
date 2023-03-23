@@ -1,8 +1,11 @@
 {% extends 'base.html' %}
 {% block title %}Последние обновления на сайте{% endblock %}
 {% block header %}Последние обновления на сайте{% endblock %}
+{% load cache %}
 {% block content %}
   {% include 'includes/posts/switcher.html' %}
-  {% include "includes/posts/post_list.html" %}
+  {% cache 20 index_page with page_obj%}
+    {% include "includes/posts/post_list.html" %}
+  {% endcache %}
   {% include "includes/posts/paginator.html" %}
 {% endblock %} 
