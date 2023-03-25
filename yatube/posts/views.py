@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, redirect, render
+from django.db.models import Q
 
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, Comment
@@ -150,3 +151,22 @@ def profile_unfollow(request, username):
         author=get_object_or_404(User, username=username)
     ).delete()
     return redirect('posts:profile', username)
+
+def search(request):
+    if 'search' in request.GET and request.GET['search']:
+        search_term = request.GET.get('search')
+        posts = Post.objects.filter(
+            Q(text__icontains=search_term) |
+            Q(author__username__icontains=search_term) |
+            Q(group__title__icontains=search_term)
+        ).distinct()
+        context = {
+            'page_obj': get_paginator(request, posts),
+           'search_term': search_term,
+        }
+        return render(request, 'posts/search_results.html', context)
+    else:
+        return redirect('posts:index')
+    
+def about(request):
+    return render(request, 'posts/about.html')
