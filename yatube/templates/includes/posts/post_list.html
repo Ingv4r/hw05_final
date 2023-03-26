@@ -14,18 +14,20 @@
   {% thumbnail post.image "960x339" upscale=True as im %}
     <img class="card-img my-2" src="{{ im.url }}">
   {% endthumbnail %}
-  <p>{{ post.text }}</p>
+  <p class="text-break">
+    {{ post.text|linebreaksbr }}
+  </p>
   <p><a href="{% url 'posts:post_detail' post.id %}">подробная информация</a></p>
   {% if not group_html %}
-    {% if post.group %}   
+    {% if post.group %}
       <a href="{% url 'posts:group_list' post.group.slug %}">
         все записи группы {{post.group.title}}
       </a>
     {% else %}
       <span style="color:blue">запись без группы</span>
-    {% endif %} 
+    {% endif %}
   {% else %}
     <span style="color:blue">группа {{ group.title }}</span>
   {% endif %}
   {% if not forloop.last %}<hr>{% endif %}
-{% endfor %} 
+{% endfor %}

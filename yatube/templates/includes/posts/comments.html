@@ -9,14 +9,18 @@
           {{ comment.created|date:"d E Y" }}:
         </span>
         {% if user == comment.author %}
-          <a href="{% url 'posts:delete_comment' post.id comment.id %}">
-            удалить комментарий
-          </a>
+          <span style="float:right;">
+            <a href="{% url 'posts:delete_comment' post.id comment.id %}">
+              удалить комментарий
+            </a>
+          </span>
         {% endif %}
       </h5>
-      <p>
-        {{ comment.text }}
-      </p>
+      <div class="p-1 bg-light border">
+        <p class="text-break">
+          {{ comment.text|linebreaksbr }}
+        </p>
+      </div>
     </div>
   </div>
 {% endfor %}
