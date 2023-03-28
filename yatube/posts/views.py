@@ -1,9 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CommentForm, PostForm
-from .models import Follow, Group, Post, Comment
+from .models import Comment, Follow, Group, Post
 from .utils import get_paginator
 
 TITLE_FIRST_CHARS = 30
@@ -150,3 +151,21 @@ def profile_unfollow(request, username):
         author=get_object_or_404(User, username=username)
     ).delete()
     return redirect('posts:profile', username)
+
+
+def search(request):
+    if 'search' in request.GET and request.GET['search']:
+        search_term = request.GET.get('search')
+        posts = Post.objects.filter(
+            Q(text__iregex=search_term)
+            | Q(author__username__iregex=search_term)
+            | Q(author__first_name__iregex=search_term)
+            | Q(group__title__iregex=search_term)
+        ).distinct()
+        context = {
+            'page_obj': get_paginator(request, posts),
+            'search_term': search_term,
+        }
+        return render(request, 'posts/search_results.html', context)
+    else:
+        return redirect('posts:index')
