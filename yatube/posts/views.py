@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.db.models import Value as V
+from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CommentForm, PostForm
@@ -156,12 +158,16 @@ def profile_unfollow(request, username):
 def search(request):
     if 'search' in request.GET and request.GET['search']:
         search_term = request.GET.get('search')
-        posts = Post.objects.filter(
+        posts = Post.objects.annotate(
+            full_name=Concat('author__first_name', V(' '), 'author__last_name')
+        ).filter(
             Q(text__iregex=search_term)
             | Q(author__username__iregex=search_term)
             | Q(author__first_name__iregex=search_term)
+            | Q(author__last_name__iregex=search_term)
+            | Q(full_name__iregex=search_term)
             | Q(group__title__iregex=search_term)
-        ).distinct()
+        )
         context = {
             'page_obj': get_paginator(request, posts),
             'search_term': search_term,
