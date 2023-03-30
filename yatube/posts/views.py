@@ -61,8 +61,21 @@ def add_comment(request, post_id):
 
 
 @login_required
+def edit_comment(request, post_id, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    if request.user != comment.author:
+        redirect('posts:post_detail', post_id)
+    form = CommentForm(request.POST or None, instance=comment)
+    if form.is_valid():
+        comment.save()
+        return redirect('posts:post_detail', post_id)
+    context = {'form': form, 'is_edit': True}
+    return render(request, 'posts/edit_comment.html', context)
+
+
+@login_required
 def delete_comment(requset, post_id, comment_id):
-    comment = Comment.objects.get(id=comment_id)
+    comment = get_object_or_404(Comment, id=comment_id)
     if requset.user == comment.author:
         comment.delete()
     return redirect('posts:post_detail', post_id)

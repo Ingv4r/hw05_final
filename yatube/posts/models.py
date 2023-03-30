@@ -50,6 +50,16 @@ class Group(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     description = models.TextField()
+    created = models.DateTimeField(
+        verbose_name='Дата создания группы',
+        auto_now_add=True,
+        db_index=True
+    )
+
+    class Meta:
+        ordering = ('-created',)
+        verbose_name = 'Группа'
+        verbose_name_plural = 'Группы'
 
     def __str__(self) -> str:
         return self.title
@@ -67,7 +77,7 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
     )
     text = models.TextField(
-        verbose_name='Добавить комментарий:'
+        verbose_name='Комментарий:'
     )
     created = models.DateTimeField(
         auto_now_add=True,
@@ -106,3 +116,9 @@ class Follow(models.Model):
                 name='user_author_unique'
             ),
         ]
+        ordering = ('author',)
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+
+    def __str__(self) -> str:
+        return f'{self.user.username} подписан на {self.author.username}'

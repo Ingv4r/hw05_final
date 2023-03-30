@@ -10,9 +10,20 @@
         </span>
         {% if user == comment.author %}
           <span style="float:right;">
-            <a href="{% url 'posts:delete_comment' post.id comment.id %}">
-              удалить комментарий
-            </a>
+            <div class="btn-group">
+              <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                ...
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a href="{% url "posts:edit_comment" post.id comment.id %}">
+                  изменить
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a href="{% url 'posts:delete_comment' post.id comment.id %}">
+                  удалить
+                </a></li>
+              </ul>
+            </div>
           </span>
         {% endif %}
       </h5>
