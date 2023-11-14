@@ -1,10 +1,14 @@
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-SECRET_KEY = '9k0^aryyb5edytu_#$!khqq=b5l#9vnx3jvs^ni*)j*^7o-xrr'
-DEBUG = True
+SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = False
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
@@ -26,6 +30,7 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'about.apps.AboutConfig',
     'sorl.thumbnail',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -113,3 +118,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

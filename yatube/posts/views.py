@@ -4,10 +4,13 @@ from django.db.models import Q
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404, redirect, render
+from django.http import JsonResponse
+
 
 from .forms import CommentForm, PostForm
 from .models import Comment, Follow, Group, Post
 from .utils import get_paginator
+from .serializers import PostSerializer
 
 TITLE_FIRST_CHARS = 30
 
@@ -61,8 +64,24 @@ def add_comment(request, post_id):
 
 
 @login_required
+def edit_comment(request, post_id, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    if request.user != comment.author:
+        redirect('posts:post_detail', post_id)
+    form = CommentForm(request.POST or None, instance=comment)
+    if form.is_valid():
+        comment.save()
+        return redirect('posts:post_detail', post_id)
+    return render(
+        request,
+        'posts/edit_comment.html',
+        {'form': form}
+    )
+
+
+@login_required
 def delete_comment(requset, post_id, comment_id):
-    comment = Comment.objects.get(id=comment_id)
+    comment = get_object_or_404(Comment, id=comment_id)
     if requset.user == comment.author:
         comment.delete()
     return redirect('posts:post_detail', post_id)
@@ -175,3 +194,10 @@ def search(request):
         return render(request, 'posts/search_results.html', context)
     else:
         return redirect('posts:index')
+
+
+def get_post(request, post_id):
+    if request.method == 'GET':
+        post = get_object_or_404(Post, id=post_id)
+        serializer = PostSerializer(post)
+        return JsonResponse(serializer.data)

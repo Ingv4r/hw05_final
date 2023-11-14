@@ -9,7 +9,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponse
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-
 from posts.forms import CommentForm, PostForm
 from posts.models import Comment, Group, Post
 
@@ -121,7 +120,9 @@ class PostsCreateFormTests(TestCase):
 
     def test_add_comment(self) -> None:
         """After submission, the comment appears on the post page."""
-        comments_count: int = Comment.objects.count()
+        comments_count: int = Comment.objects.select_related(
+            'author'
+        ).count()
         form_data: dict = {'text': 'Комментарий'}
         response: HttpResponse = self.authorized_client.post(
             reverse(
@@ -151,4 +152,4 @@ class PostsCreateFormTests(TestCase):
         comment_label: str = self.comment_form.fields['text'].label
         self.assertEqual(text_label, 'Текст записи')
         self.assertEqual(group_label, 'Группа')
-        self.assertEqual(comment_label, 'Добавить комментарий:')
+        self.assertEqual(comment_label, 'Комментарий:')

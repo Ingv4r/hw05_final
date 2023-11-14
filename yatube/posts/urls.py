@@ -11,6 +11,7 @@ urlpatterns = [
     path('posts/<int:post_id>/', views.post_detail, name='post_detail'),
     path('create/', views.post_create, name='post_create'),
     path('posts/<int:post_id>/edit/', views.post_edit, name='update_post'),
+    path('search/', views.search, name='search'),
     path(
         'posts/<int:post_id>/comment/',
         views.add_comment,
@@ -37,5 +38,10 @@ urlpatterns = [
         views.delete_comment,
         name='delete_comment'
     ),
-    path('search/', views.search, name='search'),
+    path(
+        'post/<int:post_id>/comment/<int:comment_id>/edit/',
+        views.edit_comment,
+        name='edit_comment'
+    ),
+    path('api/v1/posts/<int:post_id>/', views.get_post)
 ]
