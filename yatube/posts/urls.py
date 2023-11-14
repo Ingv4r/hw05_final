@@ -43,4 +43,5 @@ urlpatterns = [
         views.edit_comment,
         name='edit_comment'
     ),
+    path('api/v1/posts/<int:post_id>/', views.get_post)
 ]

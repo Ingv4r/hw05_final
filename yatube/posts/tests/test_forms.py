@@ -120,7 +120,9 @@ class PostsCreateFormTests(TestCase):
 
     def test_add_comment(self) -> None:
         """After submission, the comment appears on the post page."""
-        comments_count: int = Comment.objects.count()
+        comments_count: int = Comment.objects.select_related(
+            'author'
+        ).count()
         form_data: dict = {'text': 'Комментарий'}
         response: HttpResponse = self.authorized_client.post(
             reverse(

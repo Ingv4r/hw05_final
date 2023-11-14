@@ -4,10 +4,13 @@ from django.db.models import Q
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404, redirect, render
+from django.http import JsonResponse
+
 
 from .forms import CommentForm, PostForm
 from .models import Comment, Follow, Group, Post
 from .utils import get_paginator
+from .serializers import PostSerializer
 
 TITLE_FIRST_CHARS = 30
 
@@ -69,8 +72,11 @@ def edit_comment(request, post_id, comment_id):
     if form.is_valid():
         comment.save()
         return redirect('posts:post_detail', post_id)
-    context = {'form': form, 'is_edit': True}
-    return render(request, 'posts/edit_comment.html', context)
+    return render(
+        request,
+        'posts/edit_comment.html',
+        {'form': form}
+    )
 
 
 @login_required
@@ -188,3 +194,10 @@ def search(request):
         return render(request, 'posts/search_results.html', context)
     else:
         return redirect('posts:index')
+
+
+def get_post(request, post_id):
+    if request.method == 'GET':
+        post = get_object_or_404(Post, id=post_id)
+        serializer = PostSerializer(post)
+        return JsonResponse(serializer.data)
